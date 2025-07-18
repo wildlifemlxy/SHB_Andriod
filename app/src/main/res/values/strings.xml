@@ -1,3 +1,9 @@
 <resources>
-    <string name="app_name">SHB_Andriod</string>
+    <string name="app_name">SHB Android</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
+    <string name="full_view">Full View</string>
+    <string name="paginated_view">Paginated View</string>
+    <string name="loading">Now Loading...</string>
+    <string name="failed_to_load">Failed to load surveys.</string>
 </resources>

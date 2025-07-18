@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="16dp">
+
+    <TextView
+        android:id="@+id/tvStatus"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Loading surveys..."
+        android:textSize="18sp"
+        android:paddingBottom="8dp" />
+
+    <!-- Fixed table header -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#DDDDDD"
+            android:padding="8dp">
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Observer name" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="SHB individual ID" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Number of Birds" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Location" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Time" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Height of tree/m" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Height of bird/m" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Activity type" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Seen/Heard" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Activity Details" android:textStyle="bold" android:padding="2dp" />
+            <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Activity" android:textStyle="bold" android:padding="2dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- RecyclerView to display survey table -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSurveys"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:paddingTop="8dp" />
+
+</LinearLayout>
