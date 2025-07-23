@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center_vertical|center_horizontal"
+    android:padding="24dp">
+
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="24dp"
+        android:layout_marginTop="16dp"
+        android:divider="@android:color/transparent"
+        android:showDividers="middle">
+
+        <Button
+            android:id="@+id/btnSurveys"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Surveys"
+            android:background="@drawable/bg_main_button"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="20dp"
+            android:elevation="4dp"
+            android:textSize="18sp"
+            android:letterSpacing="0.05"
+            android:fontFamily="sans-serif-medium" />
+
+        <Button
+            android:id="@+id/btnEvents"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Events"
+            android:background="@drawable/bg_main_button"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="20dp"
+            android:elevation="4dp"
+            android:textSize="18sp"
+            android:letterSpacing="0.05"
+            android:fontFamily="sans-serif-medium" />
+
+        <Button
+            android:id="@+id/btnSettings"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:text="Settings"
+            android:background="@drawable/bg_main_button"
+            android:textColor="@android:color/white"
+            android:layout_marginBottom="20dp"
+            android:elevation="4dp"
+            android:textSize="18sp"
+            android:letterSpacing="0.05"
+            android:fontFamily="sans-serif-medium" />
+    </LinearLayout>
+
+</LinearLayout>

@@ -6,4 +6,7 @@
     <string name="paginated_view">Paginated View</string>
     <string name="loading">Now Loading...</string>
     <string name="failed_to_load">Failed to load surveys.</string>
+    <string name="observations_by_locations">Observations by Locations</string>
+    <string name="observations_by_month_year">Observations by Month Year</string>
+    <string name="observations_by_tree_heights">Observations by Tree Heights</string>
 </resources>

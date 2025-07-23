@@ -15,8 +15,8 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.SHB_Andriod.NoActionBar"
         tools:targetApi="31" >
-        <!-- Declare MainActivity as the launcher activity -->
-        <activity android:name=".pages.SurveyActivity"
+        <!-- Declare MainPage as the launcher activity -->
+        <activity android:name=".pages.MainPage"
             android:exported="true"
             android:screenOrientation="portrait">
             <intent-filter>
@@ -24,6 +24,16 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <!-- Declare SurveyActivity as a normal activity -->
+        <activity android:name=".pages.SurveyActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity android:name=".pages.ObservationActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+        <activity android:name=".pages.DataVisualizationActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>

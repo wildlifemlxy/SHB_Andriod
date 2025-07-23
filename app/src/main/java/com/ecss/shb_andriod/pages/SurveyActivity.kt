@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import com.ecss.shb_andriod.R
 import com.ecss.shb_andriod.api.SurveyApi
@@ -36,24 +37,11 @@ class SurveyActivity : AppCompatActivity() {
             or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
         )
-        setContentView(R.layout.activity_survey)
+        setContentView(R.layout.activity_observation)
         val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
         val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
         footerControls.visibility = View.GONE // Hide footer by default
-        val btnToggleView = findViewById<Button>(R.id.btnToggleView)
-        btnToggleView.setOnClickListener {
-            isPaginatedView = !isPaginatedView
-            currentPage = 1
-            val pageSize = cardsPerPagesView.getSelectedValue().toIntOrNull() ?: 5
-            if (isPaginatedView) {
-                footerControls.visibility = View.VISIBLE
-                showPaginatedView(pageSize)
-                updatePageInfo(pageSize)
-            } else {
-                footerControls.visibility = View.GONE
-                getAllSurveys()
-            }
-        }
+        cardsPerPagesView.visibility = View.GONE // Hide cards per page view by default
         cardsPerPagesView.setOnFocusChangeListener { _, hasFocus ->
             if (!hasFocus && isPaginatedView) {
                 val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
@@ -78,7 +66,7 @@ class SurveyActivity : AppCompatActivity() {
 
         footerControls.btnPrevPage.setOnClickListener {
             val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
-            val totalPages = ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
+            ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
             if (currentPage > 1) {
                 currentPage--
                 showPaginatedView(pageSize)
@@ -107,6 +95,13 @@ class SurveyActivity : AppCompatActivity() {
             showPaginatedView(pageSize)
             updatePageInfo(pageSize)
         }
+        val btnHome = findViewById<ImageButton>(R.id.btnHome)
+        btnHome.setOnClickListener {
+            val intent = android.content.Intent(this, MainPage::class.java)
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP or android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
+        }
     }
 
     private fun getAllSurveys() {
@@ -124,6 +119,7 @@ class SurveyActivity : AppCompatActivity() {
             Log.d("SurveyActivity", "Fetched ${surveys.size} surveys")
             loadingDialog?.dismiss()
             hideLoadingDialog()
+
             if (isPaginatedView) {
                 val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
                 val pageSize = cardsPerPagesView.getSelectedValue().toIntOrNull()?.takeIf { it > 0 } ?: 5
@@ -170,7 +166,7 @@ class SurveyActivity : AppCompatActivity() {
     }
 
     private fun updatePageInfo(pageSize: Int) {
-        val footerControls = findViewById<com.ecss.shb_andriod.view.footer_pages_view>(R.id.footerControls)
+        val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
         val tvPageInfo = footerControls.findViewById<android.widget.TextView>(R.id.tvPageInfo)
         val totalPages = ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
         tvPageInfo.text = "Page $currentPage of $totalPages"

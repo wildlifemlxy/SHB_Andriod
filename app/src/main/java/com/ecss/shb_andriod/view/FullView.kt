@@ -20,10 +20,9 @@ If      * @param startIndex The index to start numbering observations from.
      */
     fun displaySurveysAsCards(context: android.content.Context, parent: android.widget.LinearLayout, surveys: List<Survey>, startIndex: Int = 0) {
         parent.removeAllViews()
-        val adapter = com.ecss.shb_andriod.adapter.SurveyAdapter(surveys, startIndex)
+        com.ecss.shb_andriod.adapter.SurveyAdapter(surveys, startIndex)
         val inflater = android.view.LayoutInflater.from(context)
         parent.removeAllViews()
-        var expandedCardIndex: Int? = null
         val cardViews = mutableListOf<android.view.View>()
         surveys.forEachIndexed { idx, survey ->
             val cardView = inflater.inflate(com.ecss.shb_andriod.R.layout.item_survey, parent, false)
