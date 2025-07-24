@@ -34,6 +34,14 @@
         <activity android:name=".pages.DataVisualizationActivity"
             android:exported="true"
             android:screenOrientation="portrait" />
+        <activity android:name=".pages.MapActivity"
+            android:exported="true"
+            android:screenOrientation="portrait" />
+
+        <!-- Add Google Maps API key meta-data -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyDcip-f6ITdZryC3tGryODuq6XPoMDmao0" />
     </application>
 
 </manifest>

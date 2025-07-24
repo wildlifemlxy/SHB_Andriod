@@ -66,7 +66,7 @@ class PieChartView @JvmOverloads constructor(
         pieChart.setEntryLabelColor(android.graphics.Color.TRANSPARENT)
         pieChart.setEntryLabelTextSize(0f)
         // Remove extra offsets for maximum chart area
-        pieChart.setExtraOffsets(100f, 80f, 100f, 200f) // Use correct method for PieChart
+        pieChart.setExtraOffsets(0f, 0f, 0f, 0f) // Use correct method for PieChart
         pieChart.invalidate() // Force redraw
     }
 
@@ -91,6 +91,7 @@ class PieChartView @JvmOverloads constructor(
     }
 
     fun showPieChart(entries: List<PieEntry>, title: String = "Observations by Location") {
+        Log.d("PieChartView", "Showing pie chart with title: $title and entries: $entries")
         this.visibility = View.VISIBLE
         setPieChartData(entries)
         setChartTitle(title)

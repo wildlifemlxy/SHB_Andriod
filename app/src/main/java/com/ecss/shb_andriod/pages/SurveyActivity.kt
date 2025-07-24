@@ -5,13 +5,14 @@ import android.util.Log
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
 import com.ecss.shb_andriod.R
 import com.ecss.shb_andriod.api.SurveyApi
 import com.ecss.shb_andriod.model.PurposeRequest
 import com.ecss.shb_andriod.model.Survey
-import com.ecss.shb_andriod.view.CardsPerPagesView
 import com.ecss.shb_andriod.view.FullView
+import com.ecss.shb_andriod.view.LoadingView
 import com.ecss.shb_andriod.view.footer_pages_view
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -25,47 +26,28 @@ class SurveyActivity : AppCompatActivity() {
     private var currentPage = 1
     private var surveys: List<Survey> = emptyList()
     private var isPaginatedView = false
-    private var loadingDialog: android.app.AlertDialog? = null
+    private var loadingView: LoadingView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         // Make activity full screen by default
         window.decorView.systemUiVisibility = (
-            View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-            or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
-            or View.SYSTEM_UI_FLAG_FULLSCREEN
-            or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
-            or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
-        )
-        setContentView(R.layout.activity_observation)
-        val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
+                View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                        or View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                )
+        setContentView(R.layout.activity_survey)
         val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
         footerControls.visibility = View.GONE // Hide footer by default
-        cardsPerPagesView.visibility = View.GONE // Hide cards per page view by default
-        cardsPerPagesView.setOnFocusChangeListener { _, hasFocus ->
-            if (!hasFocus && isPaginatedView) {
-                val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
-                showPaginatedView(pageSize)
-            }
-        }
-        cardsPerPagesView.setOnEditorActionListener { v: android.widget.TextView, actionId: Int, event: android.view.KeyEvent? ->
-            if (isPaginatedView) {
-                val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
-                showPaginatedView(pageSize)
-            }
-            false
-        }
-        // Listen for changes in the cards per page input and update immediately
-        cardsPerPagesView.setOnCardsPerPageChangedListener { value ->
-            if (isPaginatedView) {
-                val pageSize = value.trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
-                showPaginatedView(pageSize)
-            }
-        }
+        // Remove cardsPerPagesView listeners and logic
+        // Use Spinner (selectBox) for cards per page selection
         getAllSurveys()
 
+        val selectBox = findViewById<android.widget.Spinner>(R.id.spinnerCardsPerPage)
         footerControls.btnPrevPage.setOnClickListener {
-            val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
+            val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 5
             ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
             if (currentPage > 1) {
                 currentPage--
@@ -74,7 +56,7 @@ class SurveyActivity : AppCompatActivity() {
             }
         }
         footerControls.btnNextPage.setOnClickListener {
-            val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
+            val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 5
             val totalPages = ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
             if (currentPage < totalPages) {
                 currentPage++
@@ -83,13 +65,13 @@ class SurveyActivity : AppCompatActivity() {
             }
         }
         footerControls.btnFirstPage.setOnClickListener {
-            val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
+            val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 5
             currentPage = 1
             showPaginatedView(pageSize)
             updatePageInfo(pageSize)
         }
         footerControls.btnLastPage.setOnClickListener {
-            val pageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: 5
+            val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 5
             val totalPages = ((surveys.size + pageSize - 1) / pageSize).coerceAtLeast(1)
             currentPage = totalPages
             showPaginatedView(pageSize)
@@ -102,6 +84,54 @@ class SurveyActivity : AppCompatActivity() {
             startActivity(intent)
             finish()
         }
+        // Toggle between paginated and full view
+        val btnToggleViewMode = findViewById<Button>(R.id.btnToggleViewMode)
+        // val selectBox = findViewById<android.widget.Spinner>(R.id.spinnerCardsPerPage)
+        var paginatedMode = false
+        btnToggleViewMode.setOnClickListener {
+            paginatedMode = !paginatedMode
+            btnToggleViewMode.text = if (paginatedMode) "Full View" else "Paginated View"
+            val selectBox = findViewById<android.widget.Spinner>(R.id.spinnerCardsPerPage)
+            val labelCardsPerPage = findViewById<TextView>(R.id.labelCardsPerPage)
+            // Always hide CardsPerPagesView (textbox)
+            // Only show 4 options in select box
+            val maxValue = surveys.size
+            val values = mutableListOf<String>()
+            val step = if (maxValue >= 4) maxValue / 4 else 1
+            for (i in 1..4) {
+                val value = (i * step).coerceAtMost(maxValue)
+                values.add(value.toString())
+            }
+            val adapter = android.widget.ArrayAdapter(this, android.R.layout.simple_spinner_item, values)
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+            selectBox.adapter = adapter
+            selectBox.setSelection(0)
+            selectBox.visibility = if (paginatedMode) View.VISIBLE else View.GONE
+            labelCardsPerPage.visibility = if (paginatedMode) View.VISIBLE else View.GONE
+            val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 4
+            if (paginatedMode) {
+                showPaginatedView(pageSize)
+                updatePageInfo(pageSize)
+                val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
+                footerControls.visibility = View.VISIBLE
+            } else {
+                showFullView(surveys)
+                val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
+                footerControls.visibility = View.GONE
+            }
+        }
+        selectBox.onItemSelectedListener = object : android.widget.AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: android.widget.AdapterView<*>, view: View?, position: Int, id: Long) {
+                if (paginatedMode) {
+                    val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 4
+                    currentPage = 1 // Reset to first page when changing page size
+                    showPaginatedView(pageSize)
+                    updatePageInfo(pageSize)
+                }
+            }
+            override fun onNothingSelected(parent: android.widget.AdapterView<*>) {}
+        }
+        // Remove references to spinnerCardsPerPage, labelCardsPerPage
     }
 
     private fun getAllSurveys() {
@@ -117,12 +147,11 @@ class SurveyActivity : AppCompatActivity() {
             val response = withContext(Dispatchers.IO) { surveyApi.getSurveysRaw(request) }
             surveys = response.result?.surveys ?: emptyList()
             Log.d("SurveyActivity", "Fetched ${surveys.size} surveys")
-            loadingDialog?.dismiss()
             hideLoadingDialog()
 
             if (isPaginatedView) {
-                val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
-                val pageSize = cardsPerPagesView.getSelectedValue().toIntOrNull()?.takeIf { it > 0 } ?: 5
+                val selectBox = findViewById<android.widget.Spinner>(R.id.spinnerCardsPerPage)
+                val pageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: 5
                 showPaginatedView(pageSize)
             } else {
                 showFullView(surveys)
@@ -134,11 +163,9 @@ class SurveyActivity : AppCompatActivity() {
         val surveyCardContainer: android.widget.LinearLayout = findViewById(R.id.surveyCardContainer)
         val rvSurveys: androidx.recyclerview.widget.RecyclerView = findViewById(R.id.rvSurveys)
         val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
-        val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
         surveyCardContainer.visibility = View.VISIBLE
         rvSurveys.visibility = View.GONE
         footerControls.visibility = View.GONE
-        cardsPerPagesView.visibility = View.GONE
         FullView().displaySurveysAsCards(this, surveyCardContainer, surveys)
     }
 
@@ -146,14 +173,13 @@ class SurveyActivity : AppCompatActivity() {
         val surveyCardContainer: android.widget.LinearLayout = findViewById(R.id.surveyCardContainer)
         val rvSurveys: androidx.recyclerview.widget.RecyclerView = findViewById(R.id.rvSurveys)
         val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
-        val cardsPerPagesView = findViewById<CardsPerPagesView>(R.id.cardsPerPagesView)
+        val selectBox = findViewById<android.widget.Spinner>(R.id.spinnerCardsPerPage)
         // Set continuous card index options for paginated view
-        cardsPerPagesView.setCardIndexContinuous(1, surveys.size)
-        val actualPageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: pageSize
+        // val actualPageSize = cardsPerPagesView.getSelectedValue().trim().toIntOrNull()?.takeIf { it > 0 } ?: pageSize
+        val actualPageSize = selectBox.selectedItem?.toString()?.toIntOrNull() ?: pageSize
         surveyCardContainer.visibility = View.VISIBLE
         rvSurveys.visibility = View.GONE
         footerControls.visibility = View.VISIBLE
-        cardsPerPagesView.visibility = View.VISIBLE
         // Fetch paginated surveys from backend
         CoroutineScope(Dispatchers.Main).launch {
             val pageSurveys = withContext(Dispatchers.IO) {
@@ -173,21 +199,11 @@ class SurveyActivity : AppCompatActivity() {
     }
 
     private fun showLoadingDialog() {
-        val rootView = window.decorView.rootView
-        rootView.alpha = 0.5f // Blur effect (simple dimming)
-        val popupView = layoutInflater.inflate(R.layout.popup, null)
-        val dialog = android.app.AlertDialog.Builder(this)
-            .setView(popupView)
-            .setCancelable(false)
-            .create()
-        dialog.setOnDismissListener { rootView.alpha = 1f }
-        dialog.show()
-        loadingDialog = dialog
+        loadingView?.show()
     }
 
     private fun hideLoadingDialog() {
-        loadingDialog?.dismiss()
-        window.decorView.rootView.alpha = 1f
+        loadingView?.hide()
     }
 
 }
