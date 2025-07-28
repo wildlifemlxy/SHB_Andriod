@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="nav_data_visualization" type="id" />
+    <item name="nav_survey" type="id" />
+    <item name="nav_map" type="id" />
+</resources>
+

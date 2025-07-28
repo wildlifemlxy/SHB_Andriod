@@ -1,19 +1,18 @@
 package com.ecss.shb_andriod.pages
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.ecss.shb_andriod.R
 import com.ecss.shb_andriod.api.SurveyApi
+import com.ecss.shb_andriod.base.BaseActivity
 import com.ecss.shb_andriod.model.PurposeRequest
 import com.ecss.shb_andriod.model.Survey
-import com.ecss.shb_andriod.view.PieChartView
 import com.ecss.shb_andriod.view.LoadingView
-import com.ecss.shb_andriod.view.LineChartView
-import com.ecss.shb_andriod.view.TreeChartView
-import com.ecss.shb_andriod.view.TreePercentageChartView
 import com.github.mikephil.charting.data.PieEntry
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -21,133 +20,176 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentActivity
+import androidx.viewpager2.adapter.FragmentStateAdapter
+import com.ecss.shb_andriod.fragments.LineChartFragment
+import com.ecss.shb_andriod.fragments.PieChartFragment
+import com.ecss.shb_andriod.fragments.TreeChartFragment
+import com.google.android.material.tabs.TabLayoutMediator
+import com.ecss.shb_andriod.view.TreeChartView
+import com.ecss.shb_andriod.view.TreePercentageChartView
+import com.ecss.shb_andriod.model.ChartDataViewModel
 
-class DataVisualizationActivity : AppCompatActivity() {
+class DataVisualizationActivity : BaseActivity() {
     private var surveys: List<Survey> = emptyList()
-    private lateinit var pieChartView: PieChartView
-    private lateinit var lineChartView: LineChartView
-    private lateinit var treeChartView: TreeChartView
-    private lateinit var treePercentageChartView: TreePercentageChartView
-    private var isPercentageMode = false
     private lateinit var loadingView: LoadingView
     private var reportType: String = "location" // Track current report type
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_data_visualization)
-        val btnPieChart = findViewById<Button>(R.id.btnPieChart)
-        val btnLineChart = findViewById<Button>(R.id.btnLineChart)
-        val btnTreeHeightChart = findViewById<Button>(R.id.btnTreeHeightChart)
-        val btnGenerateReport = findViewById<Button>(R.id.btnGenerateReport)
-        pieChartView = findViewById(R.id.pieChartView)
-        lineChartView = findViewById(R.id.lineChartView)
-        treeChartView = findViewById(R.id.treeChartView)
-        // Add percentage chart view
-        treePercentageChartView = findViewById(R.id.treePercentageChartView)
+        Log.d("DataVisualizationActivity", "onCreate called")
+        // Hide system UI for fullscreen (top and bottom nav bars)
+        // Hide system UI for fullscreen (top and bottom nav bars)
+        window.decorView.systemUiVisibility = (
+                android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+                        or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+                        or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+                        or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                )
 
-        // Show pie chart by default with real data (after surveys are loaded)
-        pieChartView.visibility = View.GONE // Hide until data is loaded
+        setupDrawerAndToolbar(R.layout.activity_data_visualization)
         loadingView = LoadingView(this)
+        val chartDataViewModel = ViewModelProvider(this)[ChartDataViewModel::class.java]
+        Log.d("DataVisualizationActivity", "Calling getAllSurveys...")
+        getAllSurveys(chartDataViewModel)
+        Log.d("DataVisualizationActivity", "After getAllSurveys...")
+        // Remove direct chart view references
+        // val btnPieChart = findViewById<Button>(R.id.btnPieChart)
+        // val btnLineChart = findViewById<Button>(R.id.btnLineChart)
+        // val btnTreeHeightChart = findViewById<Button>(R.id.btnTreeHeightChart)
+        val btnGenerateReport = findViewById<Button>(R.id.btnGenerateReport)
 
-        btnPieChart.setOnClickListener {
-            pieChartView.visibility = View.VISIBLE
-            lineChartView.visibility = View.GONE
-            treeChartView.visibility = View.GONE
-            treePercentageChartView.visibility = View.GONE
-            btnGenerateReport.text = "Generate Report"
-            btnGenerateReport.visibility = View.VISIBLE
-            reportType = "location" // Pie chart = location report
+        // Setup ViewPager2 and TabLayout
+        val viewPager = findViewById<androidx.viewpager2.widget.ViewPager2>(R.id.chartViewPager)
+        val tabLayout = findViewById<com.google.android.material.tabs.TabLayout>(R.id.chartTabLayout)
+        val chartFragments = listOf(
+            PieChartFragment(),
+            LineChartFragment(),
+            TreeChartFragment()
+        )
+        val chartTitles = listOf("Observations by Location", "Observations by Month Year", "Observations by Trees")
+        viewPager.adapter = object : FragmentStateAdapter(this) {
+            override fun getItemCount() = chartFragments.size
+            override fun createFragment(position: Int): Fragment = chartFragments[position]
         }
-        btnLineChart.setOnClickListener {
-            pieChartView.visibility = View.GONE
-            lineChartView.visibility = View.VISIBLE
-            treeChartView.visibility = View.GONE
-            treePercentageChartView.visibility = View.GONE
-            btnGenerateReport.text = "Generate Report"
-            btnGenerateReport.visibility = View.VISIBLE
-            reportType = "monthYear" // Line chart = month/year report
+        TabLayoutMediator(tabLayout, viewPager) { tab, position ->
+            tab.text = chartTitles[position]
+        }.attach()
+
+        // Use MaterialButton instead of ImageButton for nav bar
+        val btnHome = findViewById<com.google.android.material.button.MaterialButton>(R.id.btnHome)
+        val btnBack = findViewById<com.google.android.material.button.MaterialButton>(R.id.btnBack)
+        btnHome.setOnClickListener {
+            // Go to main page (MainActivity)
+            val intent = Intent(this, MainPage::class.java)
+            intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK)
+            startActivity(intent)
+            finish()
         }
-        btnTreeHeightChart.setOnClickListener {
-            pieChartView.visibility = View.GONE
-            lineChartView.visibility = View.GONE
-            isPercentageMode = false
-            treeChartView.visibility = View.VISIBLE
-            treePercentageChartView.visibility = View.GONE
-            btnGenerateReport.visibility = View.VISIBLE
-            btnGenerateReport.text = "Show Percentage"
-            // Optionally set reportType if needed for tree chart
+        btnBack.setOnClickListener {
+            // Go to previous page
+            onBackPressedDispatcher.onBackPressed()
         }
+
         btnGenerateReport.setOnClickListener {
-            val seenHeardCounts = surveys.filter { !it.seenHeard.isNullOrBlank() }
-                .groupingBy { it.seenHeard!!.trim() }
-                .eachCount()
-            val seenCount = seenHeardCounts["Seen"] ?: 0
-            val heardCount = seenHeardCounts["Heard"] ?: 0
-            val notFoundCount = seenHeardCounts["Not found"] ?: 0
-            val seenHeardTotal = seenCount + heardCount + notFoundCount
-            val seenHeardBreakdown = "Seen: $seenCount, Heard: $heardCount, Not found: $notFoundCount"
-            // Prepare locationBreakdown for ReportView
-            val locationCounts = countObservationsByLocation(surveys)
-            val locationBreakdown = locationCounts.mapValues { (location, count) ->
-                val breakdown = surveys.filter { (it.location ?: "Unknown") == location }
-                    .groupingBy { it.seenHeard ?: "Unknown" }
+            if (btnGenerateReport.text == "Show Percentage") {
+                // treeChartView.visibility = View.GONE
+                // treePercentageChartView.visibility = View.VISIBLE
+                btnGenerateReport.text = "Show Tree Height"
+            } else if (btnGenerateReport.text == "Show Tree Height") {
+                // treeChartView.visibility = View.VISIBLE
+                // treePercentageChartView.visibility = View.GONE
+                btnGenerateReport.text = "Show Percentage"
+            } else {
+                val seenHeardCounts = surveys.filter { !it.seenHeard.isNullOrBlank() }
+                    .groupingBy { it.seenHeard!!.trim() }
                     .eachCount()
-                Pair(count, breakdown)
-            }
-            // Show only one report popup depending on observation type
-            val selectedReportType = getSelectedReportType() // Implement this function to return "location" or "monthYear"
-            if (selectedReportType == "location") {
-                com.ecss.shb_andriod.view.ReportView.showReportPopup(
-                    context = this,
-                    title = "Report by Location",
-                    locationBreakdown = locationBreakdown,
-                    tableHeaderLocation = "Location",
-                    tableHeaderObservations = "Observations",
-                    seenHeardTotal = seenHeardTotal,
-                    seenHeardBreakdown = seenHeardBreakdown
-                )
-            } else if (selectedReportType == "monthYear") {
-                val monthYearBreakdown = surveys.groupBy { com.ecss.shb_andriod.view.ReportView.normalizeToMonthYear(it.date ?: "") }
-                    .mapValues { entry ->
-                        entry.value.groupingBy { it.seenHeard ?: "Unknown" }.eachCount()
-                    }
-                com.ecss.shb_andriod.view.ReportView.showMonthYearReportPopup(
-                    context = this,
-                    title = "Observations by Month Year",
-                    monthYearBreakdown = monthYearBreakdown,
-                    tableHeaderMonthYear = "Month Year",
-                    tableHeaderObservations = "Observations"
-                )
+                val seenCount = seenHeardCounts["Seen"] ?: 0
+                val heardCount = seenHeardCounts["Heard"] ?: 0
+                val notFoundCount = seenHeardCounts["Not found"] ?: 0
+                val seenHeardTotal = seenCount + heardCount + notFoundCount
+                val seenHeardBreakdown = "Seen: $seenCount, Heard: $heardCount, Not found: $notFoundCount"
+                // Prepare locationBreakdown for ReportView
+                val locationCounts = countObservationsByLocation(surveys)
+                val locationBreakdown = locationCounts.mapValues { (location, count) ->
+                    val breakdown = surveys.filter { (it.location ?: "Unknown") == location }
+                        .groupingBy { it.seenHeard ?: "Unknown" }
+                        .eachCount()
+                    Pair(count, breakdown)
+                }
+                // Show only one report popup depending on observation type
+                val selectedReportType = getSelectedReportType() // Implement this function to return "location" or "monthYear"
+                if (selectedReportType == "location") {
+                    com.ecss.shb_andriod.view.ReportView.showReportPopup(
+                        context = this,
+                        title = "Report by Location",
+                        locationBreakdown = locationBreakdown,
+                        tableHeaderLocation = "Location",
+                        tableHeaderObservations = "Observations",
+                        seenHeardTotal = seenHeardTotal,
+                        seenHeardBreakdown = seenHeardBreakdown
+                    )
+                } else if (selectedReportType == "monthYear") {
+                    val monthYearBreakdown = surveys.groupBy { com.ecss.shb_andriod.view.ReportView.normalizeToMonthYear(it.date ?: "") }
+                        .mapValues { entry ->
+                            entry.value.groupingBy { it.seenHeard ?: "Unknown" }.eachCount()
+                        }
+                    com.ecss.shb_andriod.view.ReportView.showMonthYearReportPopup(
+                        context = this,
+                        title = "Observations by Month Year",
+                        monthYearBreakdown = monthYearBreakdown,
+                        tableHeaderMonthYear = "Month Year",
+                        tableHeaderObservations = "Observations"
+                    )
+                }
             }
         }
-        getAllSurveys()
-        pieChartView.attachCustomMarker(this)
     }
 
-    private fun getAllSurveys() {
+    private fun getAllSurveys(chartDataViewModel: ChartDataViewModel) {
+        Log.d("DataVisualizationActivity", "getAllSurveys called")
         loadingView.show()
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                // Simulate network call or use your actual API call
+                Log.d("DataVisualizationActivity", "Starting network call for surveys...")
                 val retrofit = Retrofit.Builder()
                     .baseUrl("https://shb-backend.azurewebsites.net/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build()
                 val surveyApi = retrofit.create(SurveyApi::class.java)
+                Log.d("DataVisualizationActivity", "Survey API: $surveyApi")
                 val request = PurposeRequest(purpose = "retrieveAndriod")
-                val response = withContext(Dispatchers.IO) { surveyApi.getSurveysRaw(request) }
+                Log.d("DataVisualizationActivity", "Request body: $request")
+                val response = withContext(Dispatchers.IO) {
+                    try {
+                        surveyApi.getSurveysRaw(request)
+                    } catch (apiEx: Exception) {
+                        Log.e("DataVisualizationActivity", "Exception in getSurveysRaw: ${apiEx.message}", apiEx)
+                        throw apiEx
+                    }
+                }
+                Log.d("DataVisualizationActivity", "API response: $response")
                 surveys = response.result?.surveys ?: emptyList<Survey>()
-                Log.d("DataVisualizationActivity", "Retrieved ${surveys}")
+                Log.d("DataVisualizationActivity", "Retrieved surveys size: ${surveys.size}")
+                surveys.forEach { Log.d("DataVisualizationActivity", "Survey: $it") }
 
-                val locationCounts: Map<String, Int> = countObservationsByLocation(surveys)
-                val totalObservations: Int = locationCounts.values.sum()
-                val chartData: List<PieEntry> = locationCounts.map { entry: Map.Entry<String, Int> ->
+                // --- Build breakdown map for PieChart markers ---
+                val locationCounts = countObservationsByLocation(surveys)
+                val breakdownMapByLabel = locationCounts.mapValues { (location, _) ->
+                    listOf("Seen", "Heard", "Not found").associateWith { seenHeardType ->
+                        surveys.count { (it.location ?: "Unknown") == location && (it.seenHeard ?: "Unknown") == seenHeardType }
+                    }
+                }
+                // --- Build PieEntry list with breakdown in data ---
+                val totalObservations = locationCounts.values.sum()
+                val chartData: List<PieEntry> = locationCounts.map { entry ->
                     val location = entry.key
                     val count = entry.value
-                    val breakdownMap: Map<String, Int> = surveys.filter { (it.location ?: "Unknown") == location }
-                        .groupingBy { it.seenHeard ?: "Unknown" }
-                        .eachCount()
-                    val percentage: Double = if (totalObservations > 0) count * 100.0 / totalObservations else 0.0
+                    val breakdownMap = breakdownMapByLabel[location] ?: emptyMap()
+                    val percentage = if (totalObservations > 0) count * 100.0 / totalObservations else 0.0
                     PieEntry(
                         count.toFloat(),
                         location,
@@ -157,87 +199,20 @@ class DataVisualizationActivity : AppCompatActivity() {
                         )
                     )
                 }
+
                 withContext(Dispatchers.Main) {
                     loadingView.hide()
-                    // Setup PieChartView (custom view for pie chart)
+                    // Update ViewModel with surveys
+                    chartDataViewModel.setSurveys(surveys)
                     val btnGenerateReport = findViewById<android.widget.Button>(R.id.btnGenerateReport)
                     val tvNoData = findViewById<View>(R.id.tvNoData)
-                    pieChartView.visibility = View.GONE
-                    lineChartView.visibility = View.GONE
-                    tvNoData.visibility = View.GONE
-
-                    Log.d("DataVisualizationActivity", "Setting pie chart data: $chartData")
-                    pieChartView.showPieChart(chartData)
-
-                    // Prepare data for TreeChartView
-                    val treeChartData = surveys.mapNotNull { survey ->
-                        TreeChartView.DataPoint(
-                            observerName = survey.observerName,
-                            shbIndividualId = survey.shbIndividualId,
-                            numberOfBirds = survey.numberOfBirds,
-                            location = survey.location,
-                            date = survey.date,
-                            time = survey.time,
-                            heightOfTree = survey.heightOfTree,
-                            heightOfBird = survey.heightOfBird,
-                            activityType = survey.activityType,
-                            seenHeard = survey.seenHeard,
-                            activityDetails = survey.activityDetails,
-                            activity = survey.activity
-                        )
-                    }
-                    val treePercentageChartData = surveys.mapNotNull { survey ->
-                        val label = survey.date ?: survey.location ?: ""
-                        val treeHeight = survey.heightOfTree?.toFloatOrNull()
-                        val birdHeight = survey.heightOfBird?.toFloatOrNull()
-                        if (treeHeight != null && birdHeight != null && treeHeight > 0f) {
-                            val percentage = birdHeight / treeHeight
-                            TreePercentageChartView.DataPoint(
-                                label = label,
-                                treeHeight = 1f,
-                                birdHeight = percentage,
-                                observerName = survey.observerName,
-                                numberOfBirds = survey.numberOfBirds,
-                                location = survey.location,
-                                date = survey.date,
-                                time = survey.time,
-                                activityType = survey.activityType,
-                                seenHeard = survey.seenHeard
-                            )
-                        } else {
-                            null
-                        }
-                    }
-                    treeChartView.setData(treeChartData)
-                    treePercentageChartView.setData(treePercentageChartData)
-                    btnGenerateReport.visibility = View.VISIBLE // Show button after fetching data
-                    // After loading data, only show the chart that matches the selected button
-                    if (surveys.isEmpty()) {
-                        pieChartView.visibility = View.GONE
-                        lineChartView.visibility = View.GONE
-                        tvNoData.visibility = View.VISIBLE
-                    } else {
-                        // Default: show pie chart, hide line chart
-                        pieChartView.visibility = View.VISIBLE
-                        lineChartView.visibility = View.GONE
-                        tvNoData.visibility = View.GONE
-                    }
-                    // Update line chart with month-year data
-                    val monthYearCounts: Map<String, Pair<Int, Map<String, Int>>> = countObservationsByMonthYearWithSeenHeard(surveys)
-                    val monthYearLabels: List<String> = monthYearCounts.keys.toList()
-                    val totalCounts: List<Float> = monthYearCounts.values.map { it.first.toFloat() }
-                    val seenHeardTypes: Set<String> = monthYearCounts.values.flatMap { it.second.keys }.toSet()
-                    val breakdowns: Map<String, List<Float>> = seenHeardTypes.associateWith { type ->
-                        monthYearLabels.map { label ->
-                            monthYearCounts[label]?.second?.get(type)?.toFloat() ?: 0f
-                        }
-                    }
-                    lineChartView.setLineChartData(monthYearLabels, totalCounts, breakdowns)
+                    tvNoData.visibility = if (surveys.isEmpty()) View.VISIBLE else View.GONE
+                    btnGenerateReport.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     loadingView.hide()
-                    // Handle error (show a message, etc.)
+                    Log.e("DataVisualizationActivity", "Error loading surveys: ${e.message}", e)
                 }
             }
         }
@@ -252,28 +227,6 @@ class DataVisualizationActivity : AppCompatActivity() {
             Log.d("DataVisualizationActivity","Location: $location, Count: ${locationCounts[location]}")
         }
         return locationCounts
-    }
-
-    fun countObservationsByMonthYearWithSeenHeard(surveys: List<Survey>): Map<String, Pair<Int, Map<String, Int>>> {
-        val monthYearCounts = mutableMapOf<String, Pair<Int, Map<String, Int>>>()
-        val inputFormats = listOf(
-            java.text.SimpleDateFormat("dd-MMM-yy", java.util.Locale.UK),
-            java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.UK)
-        )
-        for (survey in surveys) {
-            val dateStr = survey.date ?: continue
-            val date = inputFormats.firstNotNullOfOrNull { format ->
-                try { format.parse(dateStr) } catch (_: Exception) { null }
-            } ?: continue
-            val monthYear = java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.UK).format(date)
-            val seenHeard = survey.seenHeard ?: "Unknown"
-            val (count, seenHeardMap) = monthYearCounts.getOrDefault(monthYear, Pair(0, mutableMapOf()))
-            val newSeenHeardMap = seenHeardMap.toMutableMap()
-            newSeenHeardMap[seenHeard] = newSeenHeardMap.getOrDefault(seenHeard, 0) + 1
-            monthYearCounts[monthYear] = Pair(count + 1, newSeenHeardMap)
-            Log.d("DataVisualizationActivity", "MonthYear: $monthYear, Count: ${count + 1}, SeenHeard: $newSeenHeardMap")
-        }
-        return monthYearCounts
     }
 
     // Helper function to determine which report type to show

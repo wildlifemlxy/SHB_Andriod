@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="background_main">#222222</color>
+    <color name="text_main">#FFFFFF</color>
+    <color name="drawer_background">#222222</color>
+    <color name="drawer_text">#FFFFFF</color>
+    <!-- Add other dark mode color overrides as needed -->
+</resources>
+

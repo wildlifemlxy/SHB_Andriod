@@ -109,4 +109,14 @@
         android:elevation="8dp"
         android:visibility="gone" />
 
+    <!-- Top App Bar with menu -->
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/topAppBar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@color/design_default_color_primary"
+        android:elevation="4dp"
+        android:fitsSystemWindows="false"
+        app:menu="@menu/menu_toolbar_data_visualization" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

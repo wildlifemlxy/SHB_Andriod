@@ -36,7 +36,7 @@ If      * @param startIndex The index to start numbering observations from.
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvTime)?.text = survey.time ?: "-"
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvHeightOfTree)?.text = survey.heightOfTree?.toString() ?: "-"
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvHeightOfBird)?.text = survey.heightOfBird?.toString() ?: "-"
-            cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvActivityType)?.text = survey.activityType ?: "-"
+            cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvActivity)?.text = survey.activity ?: "-"
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvSeenHeard)?.text = survey.seenHeard ?: "-"
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvActivityDetails)?.text = survey.activityDetails ?: "-"
             cardView.findViewById<android.widget.TextView>(com.ecss.shb_andriod.R.id.tvActivity)?.text = survey.activity ?: "-"
@@ -60,6 +60,15 @@ If      * @param startIndex The index to start numbering observations from.
                     }
                 }
             }
+            // Set card background color based on seenHeard value
+            val seenHeard = survey.seenHeard?.lowercase() ?: ""
+            val colorRes = when (seenHeard) {
+                "seen" -> android.R.color.holo_blue_light
+                "heard" -> android.R.color.holo_green_light
+                "not found" -> android.R.color.holo_red_light
+                else -> android.R.color.white
+            }
+            cardView.setBackgroundColor(androidx.core.content.ContextCompat.getColor(context, colorRes))
             cardViews.add(cardView)
         }
         cardViews.forEach { parent.addView(it) }

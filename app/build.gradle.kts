@@ -48,12 +48,15 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     // Gson converter for JSON parsing
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    // OkHttp for HTTP client (optional, but recommended)
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    // SplashScreen API
+    implementation("androidx.core:core-splashscreen:1.0.1")
 
     // MPAndroidChart for charting
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     // Google Maps SDK
     implementation("com.google.android.gms:play-services-maps:18.2.0")
+
+    // Google Maps Utils for clustering
+    implementation("com.google.maps.android:android-maps-utils:3.8.2")
 }

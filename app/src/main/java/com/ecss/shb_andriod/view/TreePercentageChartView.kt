@@ -24,7 +24,7 @@ class TreePercentageChartView @JvmOverloads constructor(
         val location: String?,
         val date: String?,
         val time: String?,
-        val activityType: String?,
+        val activity: String?,
         val seenHeard: String?
     )
     private var data: List<DataPoint> = emptyList()
@@ -125,6 +125,16 @@ class TreePercentageChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (data.isEmpty()) return
+        // Draw chart title at the top center
+        val title = "Observations by Tree Heights (%)"
+        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = 54f
+            textAlign = Paint.Align.CENTER
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT_BOLD, android.graphics.Typeface.BOLD)
+        }
+        val titleY = 120f // Increased gap from top
+        canvas.drawText(title, width / 2f, titleY, titlePaint)
         val width = width
         val height = height
         val barCount = data.size
@@ -132,7 +142,7 @@ class TreePercentageChartView @JvmOverloads constructor(
         val groupWidth = width * 0.7f / minOf(barCount, 7)
         val gap = width * 0.03f / (minOf(barCount, 7) + 1)
         val yAxisStartX = width * 0.1f
-        val yAxisStartY = height * 0.1f
+        val yAxisStartY = titleY + 100f // Add more gap below title before chart starts
         val yAxisEndY = height * 0.8f
         val xAxisStartX = yAxisStartX
         val xAxisEndX = width * 0.95f
@@ -364,7 +374,7 @@ class TreePercentageChartView @JvmOverloads constructor(
                 "Percentage: ${String.format(Locale.getDefault(), "%.2f", percent * 100)}%",
                 "Date: ${formatDate(dp.date)}",
                 "Time: ${formatTime(dp.time)}",
-                "Activity Type: ${dp.activityType}",
+                "Activity: ${dp.activity}",
                 "Seen/Heard: ${dp.seenHeard}"
             )
             val padding = 60f // Add missing definition

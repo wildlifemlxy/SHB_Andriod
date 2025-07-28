@@ -2,8 +2,8 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:maxWidth="100dp"
-    android:maxHeight="40dp"
+    android:maxWidth="160dp"
+    android:maxHeight="90dp"
     android:background="@drawable/marker_bg"
     android:orientation="vertical"
     android:padding="12dp">
@@ -12,14 +12,21 @@
         android:id="@+id/tvLabel"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/white"
-        android:textStyle="bold" />
+        android:textColor="@color/drawer_text"
+        android:textStyle="bold"
+        android:textSize="13sp" />
 
     <TextView
         android:id="@+id/tvValue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@android:color/white"
-        android:textSize="14sp" />
+        android:textColor="@color/drawer_text"
+        android:textSize="11sp"
+        android:maxWidth="160dp"
+        android:ellipsize="end"
+        android:singleLine="false"
+        android:inputType="textMultiLine"
+        android:lines="4"
+        android:text="Not found: 0" />
 
 </LinearLayout>

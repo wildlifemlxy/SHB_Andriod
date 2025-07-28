@@ -1,33 +1,27 @@
 package com.ecss.shb_andriod.pages
 
+import android.content.res.Configuration
 import android.os.Bundle
-import android.widget.Button
-import android.widget.EditText
 import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
 import com.ecss.shb_andriod.R
+import com.ecss.shb_andriod.base.BaseActivity
 
-class MainPage : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
+class MainPage : BaseActivity()
+{
+    override fun onCreate(savedInstanceState: Bundle?)
+    {
+        // Show the splash screen on Android 12+
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main_page)
-
-        val btnSettings = findViewById<Button>(R.id.btnSettings)
-        val btnSurveys = findViewById<Button>(R.id.btnSurveys)
-        val btnEvents = findViewById<Button>(R.id.btnEvents)
-
-        btnSurveys.setOnClickListener {
-            val intent = android.content.Intent(this, ObservationActivity::class.java)
-            startActivity(intent)
-        }
-
-        btnEvents.setOnClickListener {
-            // TODO: Navigate to Events page
-            Toast.makeText(this, "Events clicked", Toast.LENGTH_SHORT).show()
-        }
-        btnSettings.setOnClickListener {
-            // TODO: Navigate to Settings page
-            Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show()
-        }
+        // Hide system UI for fullscreen (top and bottom nav bars)
+        window.decorView.systemUiVisibility = (
+            android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+            or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
+            or android.view.View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
+            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+            or android.view.View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+        )
+        // Use the shared setup for drawer and toolbar
+        setupDrawerAndToolbar(R.layout.activity_main_page)
     }
 }

@@ -18,13 +18,15 @@ data class Survey(
     @com.google.gson.annotations.SerializedName("Height of bird/m")
     val heightOfBird: String?,
     @com.google.gson.annotations.SerializedName("Activity (foraging, preening, calling, perching, others)")
-    val activityType: String?,
+    val activity: String?,
     @com.google.gson.annotations.SerializedName("Seen/Heard")
     val seenHeard: String?,
     @com.google.gson.annotations.SerializedName("Activity Details")
     val activityDetails: String?,
-    @com.google.gson.annotations.SerializedName("Activity")
-    val activity: String?
+    @com.google.gson.annotations.SerializedName("Lat")
+    val lat: Double?,
+    @com.google.gson.annotations.SerializedName("Long")
+    val long: Double?
 )
 
 // Wrapper for the backend response

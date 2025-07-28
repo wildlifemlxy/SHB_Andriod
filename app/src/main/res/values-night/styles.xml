@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Use the same name as your main theme, but override for dark mode -->
+    <style name="Theme.SHB_Andriod.NoActionBar" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Example dark mode overrides -->
+        <item name="colorPrimary">@color/purple_700</item>
+        <item name="colorPrimaryVariant">@color/purple_700</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/teal_200</item>
+        <item name="colorOnSecondary">@color/black</item>
+        <item name="android:windowBackground">@color/drawer_background</item>
+        <item name="android:textColorPrimary">@color/drawer_text</item>
+        <item name="android:textColorSecondary">@color/drawer_text</item>
+        <item name="colorSurface">@color/drawer_background</item>
+        <item name="colorOnSurface">@color/drawer_text</item>
+    </style>
+</resources>

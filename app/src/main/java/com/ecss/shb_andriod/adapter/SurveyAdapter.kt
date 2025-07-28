@@ -33,7 +33,6 @@ class SurveyAdapter(private val surveys: List<Survey>, private val startIndex: I
         val tvHeightOfBirdLabel: TextView = itemView.findViewById(R.id.tvHeightOfBirdLabel)
         val tvHeightOfBird: TextView = itemView.findViewById(R.id.tvHeightOfBird)
         val tvActivityTypeLabel: TextView = itemView.findViewById(R.id.tvActivityTypeLabel)
-        val tvActivityType: TextView = itemView.findViewById(R.id.tvActivityType)
         val tvSeenHeardLabel: TextView = itemView.findViewById(R.id.tvSeenHeardLabel)
         val tvSeenHeard: TextView = itemView.findViewById(R.id.tvSeenHeard)
         val tvActivityDetailsLabel: TextView = itemView.findViewById(R.id.tvActivityDetailsLabel)
@@ -58,7 +57,7 @@ class SurveyAdapter(private val surveys: List<Survey>, private val startIndex: I
         holder.tvTime.text = survey.time ?: "-"
         holder.tvHeightOfTree.text = survey.heightOfTree ?: "-"
         holder.tvHeightOfBird.text = survey.heightOfBird ?: "-"
-        holder.tvActivityType.text = survey.activityType ?: "-"
+        holder.tvActivity.text = survey.activity ?: "-"
         holder.tvSeenHeard.text = survey.seenHeard ?: "-"
         holder.tvActivityDetails.text = survey.activityDetails ?: "-"
         holder.tvActivity.text = survey.activity ?: "-"

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="white_transparent_20">#33FFFFFF</color>
+    <color name="holo_blue_dark">#FF1976D2</color>
+    <color name="holo_green_dark">#FF388E3C</color>
+    <color name="holo_orange_dark">#FFFFA000</color>
+</resources>
+

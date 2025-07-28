@@ -25,7 +25,6 @@ class TreeChartView @JvmOverloads constructor(
         val time: String?,
         val heightOfTree: String?,
         val heightOfBird: String?,
-        val activityType: String?,
         val seenHeard: String?,
         val activityDetails: String?,
         val activity: String?
@@ -159,6 +158,16 @@ class TreeChartView @JvmOverloads constructor(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (data.isEmpty()) return
+        // Draw chart title at the top center
+        val title = "Observations by Tree Heights"
+        val titlePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+            color = Color.WHITE
+            textSize = 54f
+            textAlign = Paint.Align.CENTER
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT_BOLD, android.graphics.Typeface.BOLD)
+        }
+        canvas.drawText(title, width / 2f, 80f, titlePaint)
+
         val width = width
         val height = height
         val barCount = data.size
@@ -441,9 +450,9 @@ class TreeChartView @JvmOverloads constructor(
                     "Time: ${formatTime(dp.time)}",
                     "Height of Tree: ${dp.heightOfTree}",
                     "Height of Bird: ${dp.heightOfBird}",
-                    "Activity Type: ${dp.activityType}",
-                    "Seen/Heard: ${dp.seenHeard}"
-                )
+                    "Activity: ${dp.activity}"
+                ) +
+                (dp.seenHeard?.split("\n")?.map { "Seen/Heard: $it" } ?: listOf("Seen/Heard: "))
                 val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
                     color = Color.argb(220, 50, 50, 50)
                     style = Paint.Style.FILL
@@ -456,42 +465,45 @@ class TreeChartView @JvmOverloads constructor(
                     typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT_BOLD, android.graphics.Typeface.BOLD)
                 }
                 val padding = 60f // Increased padding for more space around text
-                val textWidth = markerLines.maxOf { textPaint.measureText(it) }
-                val textHeight = 70f * markerLines.size + padding // Adjusted line height for bigger font
+                val maxTextWidth = 700f
+                // Wrap lines to fit within maxTextWidth
+                fun wrapLine(line: String, paint: Paint, maxWidth: Float): List<String> {
+                    if (paint.measureText(line) <= maxWidth) return listOf(line)
+                    val words = line.split(" ")
+                    val lines = mutableListOf<String>()
+                    var current = ""
+                    for (word in words) {
+                        val test = if (current.isEmpty()) word else "$current $word"
+                        if (paint.measureText(test) > maxWidth) {
+                            if (current.isNotEmpty()) lines.add(current)
+                            current = word
+                        } else {
+                            current = test
+                        }
+                    }
+                    if (current.isNotEmpty()) lines.add(current)
+                    return lines
+                }
+                // Build all wrapped lines
+                val wrappedLines = mutableListOf<Pair<String, Boolean>>() // Pair<line, isBold>
+                markerLines.forEachIndexed { i, line ->
+                    val isBold = (i == 0)
+                    val paintToUse = if (isBold) boldPaint else textPaint
+                    wrapLine(line, paintToUse, maxTextWidth).forEach { wrapped ->
+                        wrappedLines.add(Pair(wrapped, isBold))
+                    }
+                }
+                val textHeight = 70f * wrappedLines.size + padding
                 val gapToTree = 32f
                 val left = markerX + gapToTree
                 val top = markerY - textHeight / 2
-                val right = left + textWidth + 2 * padding
+                val right = left + maxTextWidth + 2 * padding
                 val bottom = top + textHeight
                 canvas.drawRoundRect(left, top, right, bottom, 32f, 32f, paint)
-                for ((i, line) in markerLines.withIndex()) {
+                for ((i, pair) in wrappedLines.withIndex()) {
+                    val (line, isBold) = pair
                     val y = top + padding + 60f * (i + 1)
-                    if (i == 0) {
-                        canvas.drawText(line, left + padding, y, boldPaint)
-                    } else if (i == 2) {
-                        // Observer name: wrap and display inside the tooltip, multiple lines if needed
-                        val observerText = line.trim()
-                        if (observerText.isNotEmpty()) {
-                            val observerLines = mutableListOf<String>()
-                            var buffer = ""
-                            for (word in observerText.split(" ")) {
-                                if (textPaint.measureText(buffer + word + " ") > textWidth) {
-                                    observerLines.add(buffer.trim())
-                                    buffer = word + " "
-                                } else {
-                                    buffer += word + " "
-                                }
-                            }
-                            if (buffer.isNotBlank()) observerLines.add(buffer.trim())
-                            var wrapY = y
-                            for (oline in observerLines) {
-                                canvas.drawText(oline, left + padding, wrapY, textPaint)
-                                wrapY += 60f
-                            }
-                        }
-                    } else {
-                        canvas.drawText(line, left + padding, y, textPaint)
-                    }
+                    canvas.drawText(line, left + padding, y, if (isBold) boldPaint else textPaint)
                 }
             }
         }

@@ -6,9 +6,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.TextView
-import androidx.appcompat.app.AppCompatActivity
 import com.ecss.shb_andriod.R
 import com.ecss.shb_andriod.api.SurveyApi
+import com.ecss.shb_andriod.base.BaseActivity
 import com.ecss.shb_andriod.model.PurposeRequest
 import com.ecss.shb_andriod.model.Survey
 import com.ecss.shb_andriod.view.FullView
@@ -21,7 +21,7 @@ import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
-class SurveyActivity : AppCompatActivity() {
+class SurveyActivity : BaseActivity() {
 
     private var currentPage = 1
     private var surveys: List<Survey> = emptyList()
@@ -38,7 +38,7 @@ class SurveyActivity : AppCompatActivity() {
                         or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
                         or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                 )
-        setContentView(R.layout.activity_survey)
+        setupDrawerAndToolbar(R.layout.activity_survey)
         val footerControls = findViewById<footer_pages_view>(R.id.footerControls)
         footerControls.visibility = View.GONE // Hide footer by default
         // Remove cardsPerPagesView listeners and logic

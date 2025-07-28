@@ -561,9 +561,26 @@ class ReportView {
                     android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
                 )
             }
-            val monthYears = monthYearBreakdown.keys.toList()
-            monthYears.forEachIndexed { idx, monthYear ->
-                val breakdown = monthYearBreakdown[monthYear] ?: emptyMap()
+            // Group and sum breakdowns by normalized month-year
+            val groupedMonthYearBreakdown = mutableMapOf<String, MutableMap<String, Int>>()
+            monthYearBreakdown.forEach { (rawMonthYear, breakdown) ->
+                val inputFormats = listOf(
+                    java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.UK),
+                    java.text.SimpleDateFormat("dd MMM yyyy", java.util.Locale.UK),
+                    java.text.SimpleDateFormat("dd MMM yy", java.util.Locale.UK),
+                    java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.UK),
+                    java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.UK)
+                )
+                val date = inputFormats.firstNotNullOfOrNull { format ->
+                    try { format.parse(rawMonthYear) } catch (_: Exception) { null }
+                }
+                val normalizedMonthYear = if (date != null) java.text.SimpleDateFormat("MMM yyyy", java.util.Locale.UK).format(date) else rawMonthYear
+                val group = groupedMonthYearBreakdown.getOrPut(normalizedMonthYear) { mutableMapOf() }
+                breakdown.forEach { (k, v) -> group[k] = (group[k] ?: 0) + v }
+            }
+            val monthYears = groupedMonthYearBreakdown.keys.toList()
+            monthYears.forEachIndexed { idx, formattedMonthYear ->
+                val breakdown = groupedMonthYearBreakdown[formattedMonthYear] ?: emptyMap()
                 val count = breakdown.values.sum()
                 val rowLayout = android.widget.LinearLayout(context).apply {
                     orientation = android.widget.LinearLayout.VERTICAL
@@ -577,17 +594,6 @@ class ReportView {
                     setBackgroundColor(android.graphics.Color.TRANSPARENT)
                     setPadding(0, 0, 0, 0)
                 }
-                // Format monthYear as MMM yy
-                val formattedMonthYear = try {
-                    val inputFormats = listOf(
-                        java.text.SimpleDateFormat("MMM-yy", java.util.Locale.US),
-                        java.text.SimpleDateFormat("MMM yy", java.util.Locale.US)
-                    )
-                    val date = inputFormats.firstNotNullOfOrNull { format ->
-                        try { format.parse(monthYear) } catch (_: Exception) { null }
-                    }
-                    if (date != null) java.text.SimpleDateFormat("MMM yy", java.util.Locale.US).format(date) else monthYear
-                } catch (_: Exception) { monthYear }
                 val monthYearCell = android.widget.TextView(context).apply {
                     text = formattedMonthYear
                     setTextColor(labelColor)

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="280dp"
+    android:minWidth="200dp"
+    android:layout_height="match_parent"
+    android:layout_gravity="start"
+    android:orientation="vertical"
+    android:background="@color/drawer_background"
+    android:fitsSystemWindows="false">
+
+    <!-- Welcome Section -->
+    <TextView
+        android:id="@+id/drawerWelcome"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="24dp"
+        android:text="Welcome!"
+        android:textAppearance="@style/TextAppearance.AppCompat.Large"
+        android:textStyle="bold"
+        android:textColor="@color/drawer_text"
+        android:gravity="center" />
+
+    <!-- Drawer Items -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/drawerRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:background="@color/drawer_background"
+        android:fitsSystemWindows="false" />
+</LinearLayout>

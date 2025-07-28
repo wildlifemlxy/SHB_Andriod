@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:text="&#60;&#60;"
         android:background="@android:color/transparent"
-        android:textColor="@android:color/white"
+        android:textColor="@color/drawer_text"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
@@ -20,7 +20,7 @@
         android:layout_height="wrap_content"
         android:text="&#60;"
         android:background="@android:color/transparent"
-        android:textColor="@android:color/white"
+        android:textColor="@color/drawer_text"
         app:layout_constraintStart_toEndOf="@id/btnFirstPage"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
@@ -31,7 +31,7 @@
         android:layout_height="wrap_content"
         android:text="Page 1 of 1"
         android:textAppearance="@android:style/TextAppearance.Medium"
-        android:textColor="@android:color/white"
+        android:textColor="@color/drawer_text"
         app:layout_constraintStart_toEndOf="@id/btnPrevPage"
         app:layout_constraintEnd_toStartOf="@id/btnNextPage"
         app:layout_constraintTop_toTopOf="parent"
@@ -44,7 +44,7 @@
         android:layout_height="wrap_content"
         android:text="&#62;"
         android:background="@android:color/transparent"
-        android:textColor="@android:color/white"
+        android:textColor="@color/drawer_text"
         app:layout_constraintEnd_toStartOf="@id/btnLastPage"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
@@ -54,7 +54,7 @@
         android:layout_height="wrap_content"
         android:text="&#62;&#62;"
         android:background="@android:color/transparent"
-        android:textColor="@android:color/white"
+        android:textColor="@color/drawer_text"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />
